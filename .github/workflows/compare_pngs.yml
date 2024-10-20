@@ -1,0 +1,44 @@
+name: Compare PNG Files
+
+on:
+  pull_request:
+    paths:
+      - '**/*.png'  # Trigger on PNG file changes
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Find PNG files
+        id: find_pngs
+        run: |
+          # Find PNG files in the repository and filter out the .open directory
+          inside_file=$(find .open -name '*.png' | head -n 1)
+          outside_file=$(find . -name '*.png' ! -path './.open/*' | head -n 1)
+
+          echo "inside_file=$inside_file" >> $GITHUB_ENV
+          echo "outside_file=$outside_file" >> $GITHUB_ENV
+
+      - name: Compare PNG files
+        run: |
+          if [ -z "$inside_file" ] || [ -z "$outside_file" ]; then
+            echo "One or both of the PNG files were not found."
+            exit 1
+          fi
+
+          # Compare the hex values of the two files
+          hex_inside=$(xxd -p "$inside_file" | tr -d '\n')
+          hex_outside=$(xxd -p "$outside_file" | tr -d '\n')
+
+          if [ "$hex_inside" != "$hex_outside" ]; then
+            echo "The PNG files are not equal."
+            exit 1
+          else
+            echo "The PNG files are equal."
+            echo "You can view the example URL here: https://example.com/view"
+          fi
+
