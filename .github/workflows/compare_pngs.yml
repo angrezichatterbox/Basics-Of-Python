@@ -54,10 +54,12 @@ jobs:
       - name: Post comment on PR
         if: env.success == 'true'
         run: |
+          body='{"body": "Congrats, Hero! 🦇\\n\\nYou\'ve completed your mission! Gotham is safer thanks to your efforts. Now, for the next level, gear up and head to: [example.com](http://example.com)\\n\\nStay vigilant!"}'
+
           response=$(curl -s -o response.json -w "%{http_code}" -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
           -H "Accept: application/vnd.github.v3+json" \
           https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
-          -d '{"body": "The PNG files are equal. You can view the example URL here: https://example.com"}')
+          -d "$body")
 
           if [ "$response" != "201" ]; then
             echo "Failed to post comment on PR: $response"
