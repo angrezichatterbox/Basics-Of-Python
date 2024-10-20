@@ -53,5 +53,5 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "PNG File Comparison Successful"
           body: "The PNG files are equal. You can view the example URL here: https://example.com/view"
-          to: "${{ github.event.pull_request.user.email }}"
-          from: "your-email@example.com"
+          to: "${{ github.event.pull_request.user.email || 'default-email@example.com' }}"
+          from: "gouthammohanraj@gmail.com"
