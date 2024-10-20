@@ -26,6 +26,9 @@ jobs:
       - name: Compare PNG files
         id: compare
         run: |
+          inside_file="${{ env.inside_file }}"
+          outside_file="${{ env.outside_file }}"
+
           if [ -z "$inside_file" ] || [ -z "$outside_file" ]; then
             echo "One or both of the PNG files were not found."
             exit 1
@@ -37,6 +40,7 @@ jobs:
 
           if [ "$hex_inside" != "$hex_outside" ]; then
             echo "The PNG files are not equal."
+            echo "success=false" >> $GITHUB_ENV
             exit 1
           else
             echo "The PNG files are equal."
@@ -52,6 +56,9 @@ jobs:
           response=$(curl -s -o response.json -w "%{http_code}" -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
           -H "Accept: application/vnd.github.v3+json" \
           https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
+          -d '{"body": "The PNG files are equal. You can view the example URL here: https://example.com"}')
 
-          -d '{"body": "The PNG files are equal. You can view the example URL here: https://example.com"}'
-
+          if [ "$response" != "201" ]; then
+            echo "Failed to post comment on PR: $response"
+            exit 1
+          fi
