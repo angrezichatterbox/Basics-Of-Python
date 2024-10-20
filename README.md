@@ -1,4 +1,4 @@
-# Cursed PNG Challenge README
+# The Cursed QR
 
 ## Overview
 
