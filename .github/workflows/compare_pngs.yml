@@ -3,7 +3,7 @@ name: Compare PNG Files
 on:
   pull_request:
     paths:
-      - '**/*.png'  # Trigger on PNG file changes
+      - '**/*.png'  
 
 jobs:
   compare:
@@ -24,6 +24,7 @@ jobs:
           echo "outside_file=$outside_file" >> $GITHUB_ENV
 
       - name: Compare PNG files
+        id: compare
         run: |
           if [ -z "$inside_file" ] || [ -z "$outside_file" ]; then
             echo "One or both of the PNG files were not found."
@@ -39,6 +40,18 @@ jobs:
             exit 1
           else
             echo "The PNG files are equal."
-            echo "You can view the example URL here: https://example.com/view"
+            echo "success=true" >> $GITHUB_ENV
           fi
 
+      - name: Send email notification
+        if: env.success == 'true'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.example.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "PNG File Comparison Successful"
+          body: "The PNG files are equal. You can view the example URL here: https://example.com/view"
+          to: "${{ github.event.pull_request.user.email }}"
+          from: "your-email@example.com"
